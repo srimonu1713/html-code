@@ -1,0 +1,67 @@
+services:
+  bus_booking:
+    image: shaikmustafa/paytm:bus
+    ports:
+      - "4444:80"
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 124m
+        reservations:
+          cpus: "0.25"
+          memory: 64m
+    volumes:
+      - bus-booking-volume:/usr/share/nginx/html
+    networks:
+      - "bus-booking-network"
+
+  movie_booking:
+    image: shaikmustafa/paytm:movie
+    ports:
+      - "5555:80"
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 124m
+        reservations:
+          cpus: "0.25"
+          memory: 64m
+    volumes:
+      - movie-booking-volume:/usr/share/nginx/html
+    networks:
+      - "movie-booking-network"
+
+  shopping:
+    image: srimonu1713/myhtmlrepo:luxe
+    ports:
+      - "5556:80"
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 124m
+        reservations:
+          cpus: "0.25"
+          memory: 64m
+    volumes:
+      - shopping-volume:/usr/share/nginx/html
+    networks:
+      - "shopping-network"
+
+networks:
+  bus-booking-network:
+    driver: overlay
+  movie-booking-network:
+    driver: overlay
+  shopping-network:
+    driver: overlay
+
+volumes:
+  bus-booking-volume:
+  movie-booking-volume:
+  shopping-volume:
