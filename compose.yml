@@ -65,3 +65,122 @@ volumes:
   bus-booking-volume:
   movie-booking-volume:
   shopping-volume:
+
+
+
+//claude modified code with secrets
+
+version: "3.9"
+
+services:
+
+  bus_booking:
+    image: shaikmustafa/paytm:bus
+    ports:
+      - "4444:80"
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128m
+        reservations:
+          cpus: "0.25"
+          memory: 64m
+      restart_policy:
+        condition: on-failure      # failure అయినప్పుడు మాత్రమే restart
+        delay: 5s                  # restart కి ముందు 5 sec wait
+        max_attempts: 3            # maximum 3 times try చేయి
+        window: 120s               # 120 sec లో stable అవ్వాలి
+      update_config:
+        parallelism: 1             # ఒక్కో container update చేయి
+        delay: 10s                 # updates మధ్య 10 sec gap
+        failure_action: rollback   # update fail అయితే rollback
+    volumes:
+      - bus-booking-volume:/usr/share/nginx/html
+    networks:
+      - bus-booking-network
+    secrets:
+      - db_password
+      - api_key
+
+  movie_booking:
+    image: shaikmustafa/paytm:movie
+    ports:
+      - "5555:80"
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128m
+        reservations:
+          cpus: "0.25"
+          memory: 64m
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    volumes:
+      - movie-booking-volume:/usr/share/nginx/html
+    networks:
+      - movie-booking-network
+    secrets:
+      - db_password
+      - api_key
+
+  shopping:
+    image: srimonu1713/myhtmlrepo:luxe
+    ports:
+      - "5556:80"
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128m
+        reservations:
+          cpus: "0.25"
+          memory: 64m
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+    volumes:
+      - shopping-volume:/usr/share/nginx/html
+    networks:
+      - shopping-network
+    secrets:
+      - api_key
+
+# ── NETWORKS ──────────────────────────────────
+networks:
+  bus-booking-network:
+    driver: overlay        # Swarm కి overlay mandatory
+  movie-booking-network:
+    driver: overlay
+  shopping-network:
+    driver: overlay
+
+# ── VOLUMES ───────────────────────────────────
+volumes:
+  bus-booking-volume:
+  movie-booking-volume:
+  shopping-volume:
+
+# ── SECRETS ───────────────────────────────────
+secrets:
+  db_password:
+    external: true         # docker secret create తో create చేసిన secret
+  api_key:
+    external: true
